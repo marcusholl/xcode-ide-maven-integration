@@ -32,6 +32,7 @@
 @property (retain) NSMenuItem *xcodeMavenPluginSeparatorItem;
 @property (retain) NSMenuItem *xcodeMavenPluginItem;
 
+
 @property (retain) InitializeWindowController *initializeWindowController;
 
 @end
@@ -145,6 +146,13 @@ static SAPXcodeMavenPlugin *plugin;
                                                              keyEquivalent:@""];
             [self.xcodeMavenPluginItem.submenu addItem:initializeItem];
 
+            MyMenuItem *updateMavenProjectItem = [[MyMenuItem alloc] initWithTitle:@"Update Maven Project"
+                                                                    action:nil
+                                                             keyEquivalent:@""];
+            [self.xcodeMavenPluginItem.submenu addItem:updateMavenProjectItem];
+            
+
+            
             if (activeProjects.count == 1) {
                 id project = activeProjects[0];
                 initializeItem.title = [NSString stringWithFormat:@"Initialize %@", [project name]];
