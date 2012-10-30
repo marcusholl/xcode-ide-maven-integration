@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		56D52FE8163E83D600A7B6AA /* UpdateMavenProjectWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 56D52FE6163E83D600A7B6AA /* UpdateMavenProjectWindowController.m */; };
+		56D52FE9163E83D600A7B6AA /* UpdateMavenProjectWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 56D52FE7163E83D600A7B6AA /* UpdateMavenProjectWindowController.xib */; };
 		8320A320162EC5C9000167EB /* InitializeWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8320A31E162EC5C9000167EB /* InitializeWindowController.m */; };
 		8320A321162EC5C9000167EB /* InitializeWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8320A31F162EC5C9000167EB /* InitializeWindowController.xib */; };
 		8321A6BA1624618900758EE2 /* SAPXcodeMavenPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 8321A6B91624618900758EE2 /* SAPXcodeMavenPlugin.m */; };
@@ -19,6 +21,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		56D52FE5163E83D600A7B6AA /* UpdateMavenProjectWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UpdateMavenProjectWindowController.h; sourceTree = "<group>"; };
+		56D52FE6163E83D600A7B6AA /* UpdateMavenProjectWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UpdateMavenProjectWindowController.m; sourceTree = "<group>"; };
+		56D52FE7163E83D600A7B6AA /* UpdateMavenProjectWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = UpdateMavenProjectWindowController.xib; sourceTree = "<group>"; };
 		8320A31D162EC5C9000167EB /* InitializeWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitializeWindowController.h; sourceTree = "<group>"; };
 		8320A31E162EC5C9000167EB /* InitializeWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InitializeWindowController.m; sourceTree = "<group>"; };
 		8320A31F162EC5C9000167EB /* InitializeWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = InitializeWindowController.xib; sourceTree = "<group>"; };
@@ -106,6 +111,9 @@
 				83346ABA1631A8FB00778122 /* RunInitializeOperation.m */,
 				83A5E78C1635585800E87D28 /* XcodeConsole.h */,
 				83A5E78D1635585800E87D28 /* XcodeConsole.m */,
+				56D52FE5163E83D600A7B6AA /* UpdateMavenProjectWindowController.h */,
+				56D52FE6163E83D600A7B6AA /* UpdateMavenProjectWindowController.m */,
+				56D52FE7163E83D600A7B6AA /* UpdateMavenProjectWindowController.xib */,
 				833DFCFB162459D900BE1634 /* Supporting Files */,
 			);
 			path = XcodeIDEMavenPlugin;
@@ -174,6 +182,7 @@
 			files = (
 				833DFCFF162459D900BE1634 /* InfoPlist.strings in Resources */,
 				8320A321162EC5C9000167EB /* InitializeWindowController.xib in Resources */,
+				56D52FE9163E83D600A7B6AA /* UpdateMavenProjectWindowController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -190,6 +199,7 @@
 				83AED2E2162ED0B1007412BD /* InitializeConfiguration.m in Sources */,
 				83346ABB1631A8FB00778122 /* RunInitializeOperation.m in Sources */,
 				83A5E78E1635585800E87D28 /* XcodeConsole.m in Sources */,
+				56D52FE8163E83D600A7B6AA /* UpdateMavenProjectWindowController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

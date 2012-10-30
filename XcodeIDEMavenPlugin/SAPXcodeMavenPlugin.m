@@ -22,6 +22,7 @@
 #import <objc/runtime.h>
 #import "MyMenuItem.h"
 #import "InitializeWindowController.h"
+#import "UpdateMavenProjectWindowController.h"
 #import "RunInitializeOperation.h"
 
 @interface SAPXcodeMavenPlugin ()
@@ -34,6 +35,7 @@
 
 
 @property (retain) InitializeWindowController *initializeWindowController;
+@property (retain) UpdateMavenProjectWindowController *updateMavenProjectWindowController;
 
 @end
 
@@ -146,12 +148,6 @@ static SAPXcodeMavenPlugin *plugin;
                                                              keyEquivalent:@""];
             [self.xcodeMavenPluginItem.submenu addItem:initializeItem];
 
-            MyMenuItem *updateMavenProjectItem = [[MyMenuItem alloc] initWithTitle:@"Update Maven Project"
-                                                                    action:nil
-                                                             keyEquivalent:@""];
-            [self.xcodeMavenPluginItem.submenu addItem:updateMavenProjectItem];
-            
-
             
             if (activeProjects.count == 1) {
                 id project = activeProjects[0];
@@ -218,24 +214,53 @@ static SAPXcodeMavenPlugin *plugin;
                     initializeProjectItem.xcode3Projects = @[project];
                 }];
             }
+            MyMenuItem *updateMavenProjectItem = [[MyMenuItem alloc] initWithTitle:@"Update Version in Pom..."
+                                                                            action:nil
+                                                                     keyEquivalent:@""];
+            [self.xcodeMavenPluginItem.submenu addItem:updateMavenProjectItem];
+
+            updateMavenProjectItem.target = self;
+            updateMavenProjectItem.action = @selector(updatePom:);            
         }
     }
 }
 
+- (void)updatePom:(MyMenuItem *)menuItem {
+    self.updateMavenProjectWindowController = [[UpdateMavenProjectWindowController alloc] initWithWindowNibName:@"UpdateMavenProjectWindowController"];
+
+    self.updateMavenProjectWindowController.cancel = ^{
+        [NSApp abortModal];
+        self.updateMavenProjectWindowController = nil;
+    };
+
+    [NSApp runModalForWindow:self.updateMavenProjectWindowController.window];
+}
+
 - (NSArray *)activeProjectsFromWorkspace:(id)workspace {
-    id runContextManager = [workspace valueForKey:@"runContextManager"];
-    id activeScheme = [runContextManager valueForKey:@"activeRunContext"];
-    id buildSchemaAction = [activeScheme valueForKey:@"buildSchemeAction"];
-    id buildActionEntries = [buildSchemaAction valueForKey:@"buildActionEntries"];
+    NSArray *targets = [self activeTargetsFromWorkspace:workspace];
     NSMutableArray *projects = [NSMutableArray array];
-    for (id buildActionEntry in buildActionEntries) {
-        id buildableReference = [buildActionEntry valueForKey:@"buildableReference"];
-        id xcode3Project = [buildableReference valueForKey:@"referencedContainer"];
-        if (![projects containsObject:xcode3Project]) {
+    for (id target in targets) {
+        id xcode3Project = [target valueForKey:@"referencedContainer"];
+        if ([xcode3Project isKindOfClass:objc_getClass("Xcode3Project")] && ![projects containsObject:xcode3Project]) {
             [projects addObject:xcode3Project];
         }
     }
     return projects;
+}
+
+- (NSArray *)activeTargetsFromWorkspace:(id)workspace {
+    id runContextManager = [workspace valueForKey:@"runContextManager"];
+    id activeScheme = [runContextManager valueForKey:@"activeRunContext"];
+    id buildSchemaAction = [activeScheme valueForKey:@"buildSchemeAction"];
+    id buildActionEntries = [buildSchemaAction valueForKey:@"buildActionEntries"];
+    NSMutableArray *targets = [NSMutableArray array];
+    for (id buildActionEntry in buildActionEntries) {
+        id buildableReference = [buildActionEntry valueForKey:@"buildableReference"];
+        if (/*[buildableReference isKindOfClass:objc_getClass("Xcode3Target")] &&  */ ![targets containsObject:buildableReference]) {
+            [targets addObject:buildableReference];
+        }
+    }
+    return targets;
 }
 
 - (void)initializeAdvanced:(MyMenuItem *)menuItem {
@@ -254,11 +279,175 @@ static SAPXcodeMavenPlugin *plugin;
         [NSApp abortModal];
         self.initializeWindowController = nil;
     };
+    
     [NSApp runModalForWindow:self.initializeWindowController.window];
 }
 
 - (void)initialize:(MyMenuItem *)menuItem {
-    [self runInitializeForProjects:menuItem.xcode3Projects configuration:nil];
+    XcodeConsole *console = [[XcodeConsole alloc] initWithConsole:[self findConsoleAndActivate]];
+    @try {
+    //
+    id executionEnvironment = [self.activeWorkspace valueForKey:@"executionEnvironment"];
+    id currentBuildOperation = [executionEnvironment valueForKey:@"currentBuildOperation"];
+    
+    [console appendText:@"initialize called ...\n"];
+    [console appendText:[executionEnvironment description]];
+
+    
+    id runContextManager = [self.activeWorkspace valueForKey:@"runContextManager"];
+    id activeScheme = [runContextManager valueForKey:@"activeRunContext"];
+        
+        
+        
+//    id parameters = [activeScheme buildParametersForSchemeCommand:0 destination:[runContextManager valueForKey:@"activeRunDestination"]];
+        
+        NSArray *projects = [self activeProjectsFromWorkspace:self.activeWorkspace];
+        
+        if(projects.count == 1) {
+            
+            [console appendText:@"We have one project.\n"];
+            [console appendText: [projects[0] description]];
+            
+            unsigned int count;
+            Method *methods = class_copyMethodList(objc_getClass("NSPathStore2"), &count);
+            
+            for(int i = 0; i < count; i++) {
+                [console appendText:NSStringFromSelector(method_getName(methods[i]))];
+                [console appendText:@"\n"];
+            }
+            
+            id targetProxies = [projects[0] valueForKey:@"targetProxies"];
+            
+            [console appendText:[targetProxies description]];
+            
+            [console appendText:[[targetProxies class] description]];
+            
+            NSArray *tProxies = targetProxies;
+            
+            //[console appendText:@"xxxxxxxxxxxxxxxxxxxx\n"];
+            //[console appendText:[tProxies[0] description]];
+            
+            //methods = class_copyMethodList(objc_getClass("Xcode3Target"), &count);
+
+            for(int i = 0; i < count; i++) {
+                //[console appendText:NSStringFromSelector(method_getName(methods[i]))];
+                //[console appendText:@"\n"];
+            }
+
+            NSArray *targets = [self activeTargetsFromWorkspace:[self activeWorkspace]];
+            
+            [console appendText:targets.description];
+            
+            [console appendText:@"\nzzzzzzzzzzzzzzzzzzzzz\n"];
+            
+            [console appendText:[targets[0] valueForKey:@"resolvedBuildable"] ];
+            [console appendText:[targets[0] valueForKey:@"resolvedBlueprint"] ];
+              
+            id infoPListPath = [targets[0] valueForKey:@"infoPlistFilePath"];
+            
+            [console appendText:[[infoPListPath class] description ]];
+            
+            NSString *iplp = infoPListPath;
+            
+            [console appendText:infoPListPath];
+            
+            NSDictionary *plist = [NSDictionary dictionaryWithContentsOfFile:iplp];
+            
+            NSString *version = plist[@"CFBundleShortVersionString"];
+            
+            [console appendText:version];
+            
+            [console appendText:[plist description] ];
+            
+            [console appendText:@"aaaaaaaaaaaaaaaaaaaaaaaaaa\n"];
+            [console appendText:version];
+            
+//            
+//            SEL sel = @selector(stringsByEvaluatingPropertyString:inAllConfigurationsForWorkspaceArenaSnapshot:);
+//            NSMethodSignature *sig = [tProxies[0] methodSignatureForSelector:sel];
+//            NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
+//        
+//            int yes = 1;
+//            
+//            [inv setArgument:@"INFOPLIST_FILE" atIndex:2];
+//            [inv setArgument:&yes atIndex:3];
+//            [inv invoke];
+//            [console appendText:@"After invoke"];
+//            CFTypeRef buffer;
+//            [inv getReturnValue:&buffer];
+//            id s = (id)buffer;
+//            [console appendText:[s description]];
+            
+        } else {
+            [console appendText:@"We have zero or more than one projects.\n"];
+        }
+        
+        SEL sel = @selector(buildParametersForSchemeCommand:destination:);
+        NSMethodSignature *sig = [activeScheme methodSignatureForSelector:sel];
+        NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
+        //[console appendText:sig.];
+        inv.selector = sel;
+        inv.target = activeScheme;
+        int command = 1;
+        [inv setArgument:&command atIndex:2];
+        
+        
+        id activeRunDestination = [runContextManager valueForKey:@"activeRunDestination"];
+//        
+//        if(!activeRunDestination) {
+//            [console appendText:@"ActiveRunDestination not found.\n"];
+//        } else {
+//            [console appendText:@"ActiveRunDestination found.\n"];
+//        }
+//        
+        [inv setArgument:activeRunDestination atIndex:3];
+        // GEHT NICHT
+        //[console appendText:@"1\n"];
+        //[console appendText:[inv getArgument:<#(void *)#> atIndex:1]];
+        //[inv invoke];
+        //[console appendText:@"2\n"];
+        
+        
+//        CFTypeRef buffer;
+//        [inv getReturnValue:&buffer];
+//        id s = (id)buffer;
+//        [console appendText:[s description]];
+        
+    //[console appendText:[parameters description]];
+    /*id buildSchemaAction = [activeScheme valueForKey:@"buildSchemeAction"];
+    id buildActionEntries = [buildSchemaAction valueForKey:@"buildActionEntries"];
+
+    for (id buildActionEntry in buildActionEntries) {
+        id buildableReference = [buildActionEntry valueForKey:@"buildableReference"];
+        id resolvedBuildable = [buildableReference valueForKey:@"resolvedBuildable"];
+        id xxx = [resolvedBuildable performSelector:@selector(valueForBuildSetting:withBuildParameters:) withObject:@"PRODUCT_NAME" withObject:nil];
+        [console appendText:[xxx description]];
+    }
+
+    
+    unsigned int count;
+//        Method *methods = class_copyMethodList(objc_getClass("IDESchemeBuildableReference"), &count);
+    Method *methods = class_copyMethodList(objc_getClass("IDEBuildable"), &count);
+    
+    for(int i = 0; i < count; i++) {
+        [console appendText:NSStringFromSelector(method_getName(methods[i]))];
+        [console appendText:@"\n"];
+    }
+    
+    if(!currentBuildOperation) {
+      [console appendText:@"CurrentBuildOperation not found."];
+    }
+
+    [console appendText:[currentBuildOperation description]];
+    [console appendText:@"\n\n"];
+    //
+    
+    
+    //[self runInitializeForProjects:menuItem.xcode3Projects configuration:nil];*/
+    }
+    @catch (NSException *exception) {
+        [console appendText:exception.description];
+    }
 }
 
 - (void)initializeAllAdvanced:(MyMenuItem *)menuItem {
